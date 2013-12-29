@@ -1,12 +1,12 @@
 package henry.airmouse3;
 
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -16,7 +16,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 
 enum ErrorCode {
-	Wifi_Off, Wifi_Not_Connected, None
+	Wifi_Off, Wifi_Not_Connected,Time_Out, None
 };
 interface OnScanInterruptedListener {
     public void IpFound(String ip);
@@ -24,7 +24,7 @@ interface OnScanInterruptedListener {
 }
 
 public class Scan {
-
+public static int TIMEOUT =30000;
 	public static ErrorCode ERROR;
 	private static List<OnScanInterruptedListener> _listeners = new ArrayList<OnScanInterruptedListener>();
 	
@@ -63,6 +63,7 @@ public class Scan {
 
 		ERROR = ErrorCode.None;
 		String ret = "";
+		long startScan = new Date().getTime();
 
 		ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo infoWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -91,7 +92,12 @@ public class Scan {
 			return ret;
 
 		for (int i = 1; i <= 254; i++) {
-
+			long now = new Date().getTime();
+			if (now-startScan>TIMEOUT)
+			{
+				ERROR = ErrorCode.Time_Out;
+				ret="error";
+			}
 			ip[3] = (byte) i;
 			InetAddress address = null;
 			DatagramSocket socket = null;
@@ -111,7 +117,7 @@ public class Scan {
 
 				byte[] data = new byte[7];
 				DatagramPacket packet = new DatagramPacket(data, data.length);
-				socket.setSoTimeout(100);
+				socket.setSoTimeout(50);
 				socket.receive(packet);
 				ret = address.getHostAddress();
 

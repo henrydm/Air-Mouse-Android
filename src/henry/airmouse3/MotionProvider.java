@@ -21,7 +21,7 @@ interface OnCalibrationFinishedListener {
 public class MotionProvider implements SensorEventListener {
 
 	private static long _lastSensorChange;
-	private static int _sensorType = Sensor.TYPE_LINEAR_ACCELERATION;
+	private static int _sensorType = Sensor.TYPE_GYROSCOPE;
 
 	private static Boolean _calibrating = false;
 	private static float[] _calibratingX;
@@ -67,7 +67,7 @@ public class MotionProvider implements SensorEventListener {
 	public void onSensorChanged(SensorEvent event) {
 
 		float x = event.values[0];
-		float y = event.values[1];
+		float y = event.values[2];
 
 		if (_calibrating) {
 			ComputeCalibration(x, y);
@@ -76,10 +76,10 @@ public class MotionProvider implements SensorEventListener {
 		else {
 			long now = new Date().getTime();
 
-			if (now - _lastSensorChange > Settings.MIN_MILLIS_TOPDATE) {
+			if (now - _lastSensorChange > Settings.getMIN_MILLIS_TOPDATE()) {
 
-				float finalX = x - Settings.GetDeltaX();
-				float finalY = y - Settings.GetDeltaY();
+				float finalX = x - Settings.getCALIBRATION_DELTAX();
+				float finalY = y - Settings.getCALIBRATION_DELTAY();
 
 				for (OnMotionChangedListener listener : _motionListeners)
 					listener.OnMotionChanged(finalX, finalY);
@@ -108,7 +108,7 @@ public class MotionProvider implements SensorEventListener {
 					totalX += currentVal;
 				}
 				float deltaX = totalX / _calibrationSamples;
-				Settings.SetDeltaX(deltaX);
+				Settings.setCALIBRATION_DELTAX(deltaX);
 
 				float totalY = 0;
 				for (float currentVal : _calibratingY) {
@@ -116,7 +116,7 @@ public class MotionProvider implements SensorEventListener {
 				}
 
 				float deltaY = totalY / _calibrationSamples;
-				Settings.SetDeltaY(deltaY);
+				Settings.setCALIBRATION_DELTAY(deltaY);
 
 				for (OnCalibrationFinishedListener listener : _calibrationFinishedListeners)
 					listener.OnCalibrationFinished();
