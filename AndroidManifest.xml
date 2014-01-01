@@ -28,13 +28,20 @@
             android:theme="@android:style/Theme.Black.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name="henry.airmouse3.SettingsActivity"
-            android:label="@string/title_activity_settings" >
+            android:label="@string/title_activity_settings" 
+            android:screenOrientation="portrait">
+            
+        </activity>
+        <activity
+            android:name="henry.airmouse3.KeyboardActivity"
+            android:label="@string/title_activity_keyboard"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="stateAlwaysVisible" >
         </activity>
     </application>
 

@@ -20,17 +20,34 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/backround"
+    android:gravity="bottom"
     android:orientation="vertical" >
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.98"
+        android:gravity="center"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:id="@+id/imageViewButtonFocus"
+            android:layout_width="118dp"
+            android:layout_height="119dp"
+            android:src="@drawable/focus" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
         android:gravity="bottom" >
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="0.4"
+            android:layout_weight="1"
             android:gravity="bottom"
             android:orientation="vertical" >
 
@@ -38,8 +55,8 @@
                 android:id="@+id/imageViewButtonLeft"
                 android:layout_width="wrap_content"
                 android:layout_height="300dp"
+                android:layout_gravity="left"
                 android:src="@drawable/leftbutton" />
-
         </LinearLayout>
 
         <LinearLayout
@@ -53,13 +70,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="305dp"
                 android:src="@drawable/midbutton" />
-
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="0.4"
+            android:layout_weight="1"
             android:gravity="bottom"
             android:orientation="vertical" >
 
@@ -68,9 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="300dp"
                 android:src="@drawable/rightbutton" />
-
         </LinearLayout>
-
     </LinearLayout>
 
 </LinearLayout>

@@ -40,4 +40,9 @@ public class Connection {
 		}
 	}
 
+	public static boolean IsConnected() {
+		if (_socket == null)
+			return false;
+		return _socket.isConnected();
+	}
 }

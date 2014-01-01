@@ -9,6 +9,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.GpsStatus.Listener;
 
 interface OnMotionChangedListener {
 	public void OnMotionChanged(float x, float y);
@@ -20,6 +21,7 @@ interface OnCalibrationFinishedListener {
 
 public class MotionProvider implements SensorEventListener {
 
+	private static boolean _loaded = false;
 	private static long _lastSensorChange;
 	private static int _sensorType = Sensor.TYPE_GYROSCOPE;
 
@@ -30,15 +32,23 @@ public class MotionProvider implements SensorEventListener {
 	private static int _calibrationStep = -1;
 
 	private static MotionProvider _self = new MotionProvider();
-	private static List<OnMotionChangedListener> _motionListeners = new ArrayList<OnMotionChangedListener>();
-	private static List<OnCalibrationFinishedListener> _calibrationFinishedListeners = new ArrayList<OnCalibrationFinishedListener>();
+	private static OnMotionChangedListener _motionListener;
+	private static OnCalibrationFinishedListener _calibrationFinishedListener;
 
 	protected static void SetOnCalibrationFinished(OnCalibrationFinishedListener listener) {
-		_calibrationFinishedListeners.add(listener);
+		_calibrationFinishedListener = listener;
+	}
+
+	protected static void ReleaseCalibrationListener() {
+		_calibrationFinishedListener = null;
 	}
 
 	protected static void SetOnMotionChanged(OnMotionChangedListener listener) {
-		_motionListeners.add(listener);
+		_motionListener = listener;
+	}
+
+	protected static void ReleaseMotionListener() {
+		_motionListener = null;
 	}
 
 	protected static void Calibrate() {
@@ -46,16 +56,20 @@ public class MotionProvider implements SensorEventListener {
 	}
 
 	protected static void RegisterEvents(Context context) {
+		if (_loaded)
+			return;
 		SensorManager sm = (SensorManager) context.getSystemService(android.content.Context.SENSOR_SERVICE);
 		List<Sensor> sensors = sm.getSensorList(_sensorType);
 		if (sensors.size() > 0) {
-			sm.registerListener(_self, sensors.get(0), SensorManager.SENSOR_DELAY_GAME);
+			sm.registerListener(_self, sensors.get(0), SensorManager.SENSOR_DELAY_FASTEST);
+			_loaded = true;
 		}
 	}
 
 	protected static void UnregisterEvents(Context context) {
 		SensorManager sm = (SensorManager) context.getSystemService(android.content.Context.SENSOR_SERVICE);
 		sm.unregisterListener(_self);
+		_loaded = false;
 	}
 
 	@Override
@@ -81,8 +95,8 @@ public class MotionProvider implements SensorEventListener {
 				float finalX = x - Settings.getCALIBRATION_DELTAX();
 				float finalY = y - Settings.getCALIBRATION_DELTAY();
 
-				for (OnMotionChangedListener listener : _motionListeners)
-					listener.OnMotionChanged(finalX, finalY);
+				if (_motionListener != null)
+					_motionListener.OnMotionChanged(finalX, finalY);
 
 				_lastSensorChange = now;
 			}
@@ -118,8 +132,8 @@ public class MotionProvider implements SensorEventListener {
 				float deltaY = totalY / _calibrationSamples;
 				Settings.setCALIBRATION_DELTAY(deltaY);
 
-				for (OnCalibrationFinishedListener listener : _calibrationFinishedListeners)
-					listener.OnCalibrationFinished();
+				if (_calibrationFinishedListener != null)
+					_calibrationFinishedListener.OnCalibrationFinished();
 
 			}
 		}

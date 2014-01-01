@@ -5,11 +5,14 @@ import android.os.Bundle;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.drawable.Drawable;
+import android.hardware.SensorManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
@@ -19,10 +22,13 @@ import android.widget.Toast;
 @TargetApi(Build.VERSION_CODES.GINGERBREAD)
 public class MainActivity extends Activity {
 
-	ImageView _buttonLeft, _buttonRight, _buttonWheel;
+	ImageView _buttonLeft, _buttonRight, _buttonWheel, _buttonFocus;
 	private Boolean _wheelScsrolling = false;
+	private Boolean _focusOn = false;
 	private float _lastWheelPixel = -1;
 	private byte _wheelStep = 0;
+
+	private OrientationEventListener myOrientationEventListener;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,20 +44,53 @@ public class MainActivity extends Activity {
 		_buttonWheel = (ImageView) findViewById(R.id.imageViewButtonWheel);
 		_buttonWheel.setOnTouchListener(OnTouchWheel);
 
+		_buttonFocus = (ImageView) findViewById(R.id.imageViewButtonFocus);
+		_buttonFocus.setOnTouchListener(OnTouchButtonFocus);
+
 		Settings.LoadSettings(getApplicationContext());
 
-		Scan.SetOnScanInterrupted(OnScanInterrupted);
-		Scan.ScanIpsAsync(this.getBaseContext());
+		if (!Connection.IsConnected()) {
+			Scan.SetOnScanInterrupted(OnScanInterrupted);
+			Scan.ScanIpsAsync(this.getBaseContext());
+		}
+		myOrientationEventListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI) {
+
+			@Override
+			public void onOrientationChanged(int arg0) {
+				if (arg0 != -1) {
+					if (arg0 > 75 && arg0 < 105) {
+						Intent Intent = new Intent(getApplicationContext(), KeyboardActivity.class);
+						startActivity(Intent);
+					}
+					if (arg0 > 255 && arg0 < 285) {
+						Intent Intent = new Intent(getApplicationContext(), KeyboardActivity.class);
+						startActivity(Intent);
+					}
+				}
+			}
+		};
+
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+	}
+
+	private void Release() {
+		if (myOrientationEventListener != null) {
+			myOrientationEventListener.disable();
+		}
+		MotionProvider.ReleaseCalibrationListener();
+		MotionProvider.ReleaseMotionListener();
+		MotionProvider.UnregisterEvents(getApplicationContext());
+	}
+
+	private void AssignMotionListeners() {
+		if (myOrientationEventListener != null && myOrientationEventListener.canDetectOrientation()) {
+			myOrientationEventListener.enable();
+		}
 
 		MotionProvider.SetOnMotionChanged(OnMotionChanged);
 		MotionProvider.SetOnCalibrationFinished(OnCalibrationFinished);
-
-		// final PowerManager pm = (PowerManager)
-		// getSystemService(Context.POWER_SERVICE);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		// wakelock = pm.newWakeLock(PowerManager., "etiqueta");
-		// wakelock.acquire();
-
+		MotionProvider.RegisterEvents(getApplicationContext());
 	}
 
 	@Override
@@ -83,16 +122,16 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		MotionProvider.RegisterEvents(getApplicationContext());
-		// wakelock.acquire();
+		AssignMotionListeners();
 
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
+		Release();
 		// wakelock.release();
-		MotionProvider.UnregisterEvents(getApplicationContext());
+
 	};
 
 	@Override
@@ -107,11 +146,6 @@ public class MainActivity extends Activity {
 		super.onStop();
 	}
 
-	// @Override
-	// protected void onDestroy() {
-	// super.onDestroy();
-	// }
-
 	private OnCalibrationFinishedListener OnCalibrationFinished = new OnCalibrationFinishedListener() {
 
 		@Override
@@ -124,14 +158,19 @@ public class MainActivity extends Activity {
 		@Override
 		public void OnMotionChanged(float x, float y) {
 
-			float finalX = x * Settings.getMOTION_FACTOR();
-			float finalY = y * Settings.getMOTION_FACTOR();
+			float motionFactor = Settings.getMOTION_FACTOR();
+			if (_focusOn)
+				motionFactor /= 8;
+
+			float finalX = x * motionFactor;
+			float finalY = y * motionFactor;
 
 			if (Math.abs(finalX) > Settings.getMIN_MOVEMENT() || Math.abs(finalY) > Settings.getMIN_MOVEMENT()) {
 				String xStr = Float.toString(finalX);
 				String yStr = Float.toString(finalY);
 				final String toSend = xStr + " " + yStr;
 				Connection.Send(toSend);
+
 			}
 		}
 	};
@@ -173,7 +212,7 @@ public class MainActivity extends Activity {
 			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
 				Drawable clickedDrawable = getResources().getDrawable(R.drawable.midbuttonclick);
 				_buttonWheel.setImageDrawable(clickedDrawable);
-				
+
 			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
 
 				// Wheel Move End
@@ -259,6 +298,26 @@ public class MainActivity extends Activity {
 				Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbutton);
 				_buttonRight.setImageDrawable(clickedDrawable);
 			}
+			return true;
+		}
+	};
+	private OnTouchListener OnTouchButtonFocus = new OnTouchListener() {
+
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+
+				Drawable clickedDrawable = getResources().getDrawable(R.drawable.focusclick);
+				_buttonFocus.setImageDrawable(clickedDrawable);
+				_focusOn = true;
+
+			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
+				Connection.Send("down left");
+				Connection.Send("up left");
+				Drawable clickedDrawable = getResources().getDrawable(R.drawable.focus);
+				_buttonFocus.setImageDrawable(clickedDrawable);
+				_focusOn = false;
+			} 
 			return true;
 		}
 	};
