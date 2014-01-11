@@ -3,6 +3,7 @@ package henry.airmouse3;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.ToggleButton;
 
 
 
@@ -14,6 +15,7 @@ public class SettingsActivity extends Activity {
 	EditText _editTextMilliSecondsToUpdate;
 	EditText _editTextAcceleration;
 	EditText _editTextPort;
+	ToggleButton _toggleSwitchButtons;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -24,6 +26,7 @@ public class SettingsActivity extends Activity {
 		_editTextAcceleration = (EditText) findViewById(R.id.EditTextAcceleration);
 		_editTextMinWheelMovement = (EditText) findViewById(R.id.EditTextMinWheelMovement);
 		_editTextPort= (EditText) findViewById(R.id.editTextPort);
+		_toggleSwitchButtons=(ToggleButton) findViewById(R.id.toggleButtonSwitchButtons);
 	}
 	
 	private void LoadSettingsToUI()
@@ -33,6 +36,7 @@ public class SettingsActivity extends Activity {
 		_editTextMilliSecondsToUpdate.setText(String.valueOf(Settings.getMIN_MILLIS_TOPDATE()));
 		_editTextAcceleration.setText(String.valueOf(Settings.getMOTION_FACTOR()));
 		_editTextPort.setText(String.valueOf(Settings.getPORT()));
+		_toggleSwitchButtons.setChecked(Settings.getSWITCH_BUTTONS());
 	}
 	
 	private void SaveSettingsFromUI()
@@ -42,6 +46,7 @@ public class SettingsActivity extends Activity {
 		Settings.setMIN_MILLIS_TOPDATE(Integer.valueOf(_editTextMilliSecondsToUpdate.getText().toString()));
 		Settings.setMOTION_FACTOR(Integer.valueOf(_editTextAcceleration.getText().toString()));
 		Settings.setPORT(Integer.valueOf(_editTextPort.getText().toString()));
+		Settings.setSWITCH_BUTTONS(_toggleSwitchButtons.isChecked());
 	}
 	
 	@Override

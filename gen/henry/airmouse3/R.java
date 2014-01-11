@@ -56,67 +56,74 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int midbuttonup3=0x7f02000f;
         public static final int rightbutton=0x7f020010;
         public static final int rightbuttonclick=0x7f020011;
+        public static final int wifi0=0x7f020012;
+        public static final int wifi1=0x7f020013;
+        public static final int wifi2=0x7f020014;
+        public static final int wifi3=0x7f020015;
     }
     public static final class id {
-        public static final int EditTextAcceleration=0x7f0b000e;
-        public static final int EditTextMillisecondstoUpdate=0x7f0b000d;
-        public static final int EditTextMinMovement=0x7f0b000b;
-        public static final int EditTextMinWheelMovement=0x7f0b000c;
-        public static final int TextViewMillisecondstoUpdate=0x7f0b0008;
-        public static final int TextViewMinMovement=0x7f0b0006;
-        public static final int TextViewMinWheelMovement=0x7f0b0007;
-        public static final int TextViewPort=0x7f0b000a;
-        public static final int action_settings=0x7f0b0012;
+        public static final int EditTextAcceleration=0x7f0b0012;
+        public static final int EditTextMillisecondstoUpdate=0x7f0b0011;
+        public static final int EditTextMinMovement=0x7f0b000f;
+        public static final int EditTextMinWheelMovement=0x7f0b0010;
+        public static final int TextViewMillisecondstoUpdate=0x7f0b000b;
+        public static final int TextViewMinMovement=0x7f0b0009;
+        public static final int TextViewMinWheelMovement=0x7f0b000a;
+        public static final int TextViewPort=0x7f0b000d;
+        public static final int TextViewSwitchButtons=0x7f0b000e;
+        public static final int action_settings=0x7f0b0017;
         public static final int customEdit1=0x7f0b0001;
-        public static final int editTextPort=0x7f0b000f;
-        public static final int imageViewButtonFocus=0x7f0b0002;
-        public static final int imageViewButtonLeft=0x7f0b0003;
-        public static final int imageViewButtonRight=0x7f0b0005;
-        public static final int imageViewButtonWheel=0x7f0b0004;
+        public static final int editTextPort=0x7f0b0013;
+        public static final int imageViewButtonFocus=0x7f0b0005;
+        public static final int imageViewButtonLeft=0x7f0b0006;
+        public static final int imageViewButtonRight=0x7f0b0008;
+        public static final int imageViewButtonWheel=0x7f0b0007;
+        public static final int imageViewWifi=0x7f0b0004;
         public static final int layoutKeyBoard=0x7f0b0000;
-        public static final int menu_calibrate=0x7f0b0010;
-        public static final int menu_settings=0x7f0b0011;
-        public static final int textViewAcceleration=0x7f0b0009;
+        public static final int menu_calibrate=0x7f0b0015;
+        public static final int menu_settings=0x7f0b0016;
+        public static final int textViewAcceleration=0x7f0b000c;
+        public static final int textViewLoadError=0x7f0b0003;
+        public static final int textViewLoadInfo=0x7f0b0002;
+        public static final int toggleButtonSwitchButtons=0x7f0b0014;
     }
     public static final class layout {
         public static final int activity_keyboard=0x7f030000;
-        public static final int activity_main=0x7f030001;
-        public static final int activity_settings=0x7f030002;
-        public static final int menu=0x7f030003;
+        public static final int activity_load_app=0x7f030001;
+        public static final int activity_main=0x7f030002;
+        public static final int activity_settings=0x7f030003;
+        public static final int menu=0x7f030004;
     }
     public static final class menu {
         public static final int keyboard=0x7f0a0000;
-        public static final int main=0x7f0a0001;
+        public static final int load_app=0x7f0a0001;
+        public static final int main=0x7f0a0002;
     }
     public static final class string {
         public static final int action_settings=0x7f070001;
         public static final int app_name=0x7f070000;
-        public static final int dummy_button=0x7f070004;
-        public static final int dummy_content=0x7f070005;
-        public static final int hello_world=0x7f070002;
-        public static final int pref_default_display_name=0x7f07000b;
-        public static final int pref_description_social_recommendations=0x7f070009;
+        public static final int pref_default_display_name=0x7f070007;
+        public static final int pref_description_social_recommendations=0x7f070005;
         /**  Example settings for Data & Sync 
          */
-        public static final int pref_header_data_sync=0x7f07000d;
+        public static final int pref_header_data_sync=0x7f070009;
         /**  Strings related to Settings 
  Example General settings 
          */
-        public static final int pref_header_general=0x7f070007;
+        public static final int pref_header_general=0x7f070003;
         /**  Example settings for Notifications 
          */
-        public static final int pref_header_notifications=0x7f070010;
-        public static final int pref_ringtone_silent=0x7f070013;
-        public static final int pref_title_add_friends_to_messages=0x7f07000c;
-        public static final int pref_title_display_name=0x7f07000a;
-        public static final int pref_title_new_message_notifications=0x7f070011;
-        public static final int pref_title_ringtone=0x7f070012;
-        public static final int pref_title_social_recommendations=0x7f070008;
-        public static final int pref_title_sync_frequency=0x7f07000e;
-        public static final int pref_title_system_sync_settings=0x7f07000f;
-        public static final int pref_title_vibrate=0x7f070014;
-        public static final int title_activity_keyboard=0x7f070003;
-        public static final int title_activity_settings=0x7f070006;
+        public static final int pref_header_notifications=0x7f07000c;
+        public static final int pref_ringtone_silent=0x7f07000f;
+        public static final int pref_title_add_friends_to_messages=0x7f070008;
+        public static final int pref_title_display_name=0x7f070006;
+        public static final int pref_title_new_message_notifications=0x7f07000d;
+        public static final int pref_title_ringtone=0x7f07000e;
+        public static final int pref_title_social_recommendations=0x7f070004;
+        public static final int pref_title_sync_frequency=0x7f07000a;
+        public static final int pref_title_system_sync_settings=0x7f07000b;
+        public static final int pref_title_vibrate=0x7f070010;
+        public static final int title_activity_settings=0x7f070002;
     }
     public static final class style {
         /** 

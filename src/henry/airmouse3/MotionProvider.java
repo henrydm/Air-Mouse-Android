@@ -1,6 +1,5 @@
 package henry.airmouse3;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -9,7 +8,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.GpsStatus.Listener;
 
 interface OnMotionChangedListener {
 	public void OnMotionChanged(float x, float y);

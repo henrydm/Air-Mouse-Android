@@ -2,34 +2,21 @@ package henry.airmouse3;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+
 
 public class Connection {
 
-	private static int SERVERPORT = 6000;
-	private static String SERVER_IP = "hfgjhgfgh";
 	private static DatagramSocket _socket = null;
 
-	protected static void CreateConnection(String ip, int port) {
-		SERVERPORT = port;
-		SERVER_IP = new String(ip);
+	protected static void CreateConnection(DatagramSocket socket) {
 
-		if (_socket != null)
-			_socket.close();
-
-		try {
-			_socket = new DatagramSocket();
-			_socket.connect(new InetSocketAddress(SERVER_IP, SERVERPORT));
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
+		_socket= socket;
 	}
 
 	protected synchronized static void Send(String str) {
-		if (_socket != null && _socket.isConnected()) {
+		if (_socket != null && _socket.isConnected() && !_socket.isClosed()) {
 			try {
-				byte[] bytes = str.getBytes();
+				byte[] bytes = str.getBytes("UTF-8");
 				DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
 				_socket.send(packet);
 
@@ -44,5 +31,16 @@ public class Connection {
 		if (_socket == null)
 			return false;
 		return _socket.isConnected();
+	}
+
+	protected static void Disconnect() {
+		if (_socket == null)
+			return;
+		if (_socket.isConnected()) {
+			Send("adeu");
+			//_socket.disconnect();
+		}
+		_socket.close();
+
 	}
 }

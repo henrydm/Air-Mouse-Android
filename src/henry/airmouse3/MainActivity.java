@@ -4,10 +4,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -27,9 +29,9 @@ public class MainActivity extends Activity {
 	private Boolean _focusOn = false;
 	private float _lastWheelPixel = -1;
 	private byte _wheelStep = 0;
-
 	private OrientationEventListener myOrientationEventListener;
 
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -47,22 +49,19 @@ public class MainActivity extends Activity {
 		_buttonFocus = (ImageView) findViewById(R.id.imageViewButtonFocus);
 		_buttonFocus.setOnTouchListener(OnTouchButtonFocus);
 
-		Settings.LoadSettings(getApplicationContext());
-
-		if (!Connection.IsConnected()) {
-			Scan.SetOnScanInterrupted(OnScanInterrupted);
-			Scan.ScanIpsAsync(this.getBaseContext());
-		}
 		myOrientationEventListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI) {
 
 			@Override
 			public void onOrientationChanged(int arg0) {
 				if (arg0 != -1) {
-					if (arg0 > 75 && arg0 < 105) {
+					Connection.Send(String.valueOf(arg0));
+					if (arg0 > 80 && arg0 < 100) {
+
 						Intent Intent = new Intent(getApplicationContext(), KeyboardActivity.class);
 						startActivity(Intent);
 					}
 					if (arg0 > 255 && arg0 < 285) {
+
 						Intent Intent = new Intent(getApplicationContext(), KeyboardActivity.class);
 						startActivity(Intent);
 					}
@@ -72,27 +71,60 @@ public class MainActivity extends Activity {
 
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-	}
+		if (Settings.getFISRT_USE()) {
+			AlertDialog.Builder myAlertDialog = new AlertDialog.Builder(this);
+			myAlertDialog.setTitle(R.string.app_name);
+			myAlertDialog
+					.setMessage("Calibration sensor needs to be calibrated, do you want to calibrate now? just place your phone over a flat surface and click OK");
+			myAlertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
-	private void Release() {
-		if (myOrientationEventListener != null) {
-			myOrientationEventListener.disable();
+				public void onClick(DialogInterface arg0, int arg1) {
+					MotionProvider.Calibrate();
+					Settings.setFISRT_USE(false);
+				}
+			});
+			myAlertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+				public void onClick(DialogInterface arg0, int arg1) {
+
+				}
+			});
+			myAlertDialog.show();
 		}
-		MotionProvider.ReleaseCalibrationListener();
-		MotionProvider.ReleaseMotionListener();
-		MotionProvider.UnregisterEvents(getApplicationContext());
+
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		AssignMotionListeners();
+
 	}
 
-	private void AssignMotionListeners() {
-		if (myOrientationEventListener != null && myOrientationEventListener.canDetectOrientation()) {
-			myOrientationEventListener.enable();
-		}
+	@Override
+	protected void onPause() {
+		super.onPause();
+		ReleaseMotionListeners();
+		// wakelock.release();
 
-		MotionProvider.SetOnMotionChanged(OnMotionChanged);
-		MotionProvider.SetOnCalibrationFinished(OnCalibrationFinished);
-		MotionProvider.RegisterEvents(getApplicationContext());
+	};
+
+	@Override
+	public void onSaveInstanceState(Bundle icicle) {
+		super.onSaveInstanceState(icicle);
+		// wakelock.release();
 	}
 
+	@Override
+	protected void onStop() {
+		
+		super.onStop();
+	}
+	@Override protected void onDestroy() {
+		Connection.Disconnect();
+		super.onDestroy();
+	};
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -119,31 +151,23 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		AssignMotionListeners();
+	private void AssignMotionListeners() {
+		if (myOrientationEventListener != null && myOrientationEventListener.canDetectOrientation()) {
+			myOrientationEventListener.enable();
+		}
 
+		MotionProvider.SetOnMotionChanged(OnMotionChanged);
+		MotionProvider.SetOnCalibrationFinished(OnCalibrationFinished);
+		MotionProvider.RegisterEvents(getApplicationContext());
 	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		Release();
-		// wakelock.release();
-
-	};
-
-	@Override
-	public void onSaveInstanceState(Bundle icicle) {
-		super.onSaveInstanceState(icicle);
-		// wakelock.release();
-	}
-
-	@Override
-	protected void onStop() {
+	
+	private void ReleaseMotionListeners() {
+		if (myOrientationEventListener != null) {
+			myOrientationEventListener.disable();
+		}
+		MotionProvider.ReleaseCalibrationListener();
+		MotionProvider.ReleaseMotionListener();
 		MotionProvider.UnregisterEvents(getApplicationContext());
-		super.onStop();
 	}
 
 	private OnCalibrationFinishedListener OnCalibrationFinished = new OnCalibrationFinishedListener() {
@@ -153,6 +177,7 @@ public class MainActivity extends Activity {
 			ShowToast("Calibration OK");
 		}
 	};
+	
 	private OnMotionChangedListener OnMotionChanged = new OnMotionChangedListener() {
 
 		@Override
@@ -168,31 +193,10 @@ public class MainActivity extends Activity {
 			if (Math.abs(finalX) > Settings.getMIN_MOVEMENT() || Math.abs(finalY) > Settings.getMIN_MOVEMENT()) {
 				String xStr = Float.toString(finalX);
 				String yStr = Float.toString(finalY);
-				final String toSend = xStr + " " + yStr;
+				final String toSend = xStr + "|" + yStr;
 				Connection.Send(toSend);
 
 			}
-		}
-	};
-
-	private OnScanInterruptedListener OnScanInterrupted = new OnScanInterruptedListener() {
-
-		@Override
-		public void IpFound(String ip) {
-			Connection.CreateConnection(ip, Settings.getPORT());
-		}
-
-		@Override
-		public void ErrorHappened(henry.airmouse3.ErrorCode error) {
-			if (Scan.ERROR == ErrorCode.Wifi_Not_Connected) {
-				ShowToast("WIFI is not connected to any net");
-
-			} else if (Scan.ERROR == ErrorCode.Time_Out) {
-				ShowToast("No Server found");
-			} else {
-				ShowToast("WIFI unknown error");
-			}
-
 		}
 	};
 
@@ -225,7 +229,7 @@ public class MainActivity extends Activity {
 
 				// Click wheel
 				else {
-					Connection.Send("wheel up");
+					Connection.Send("wheel|up");
 					Drawable clickedDrawable = getResources().getDrawable(R.drawable.midbutton);
 					_buttonWheel.setImageDrawable(clickedDrawable);
 				}
@@ -240,7 +244,7 @@ public class MainActivity extends Activity {
 
 				else if (Math.abs(coordinates.y - _lastWheelPixel) > Settings.getMIN_WHEEL_PIXELS()) {
 					float delta = coordinates.y - _lastWheelPixel;
-					Connection.Send("wheel " + String.valueOf(delta));
+					Connection.Send("wheel|" + String.valueOf(delta));
 					_lastWheelPixel = coordinates.y;
 					_wheelScsrolling = true;
 
@@ -278,7 +282,6 @@ public class MainActivity extends Activity {
 						_wheelStep++;
 
 				}
-
 			}
 			return true;
 		}
@@ -289,18 +292,32 @@ public class MainActivity extends Activity {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-				Connection.Send("down right");
-				Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbuttonclick);
-				_buttonRight.setImageDrawable(clickedDrawable);
+
+				SendRightDown();
 
 			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
-				Connection.Send("up right");
-				Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbutton);
-				_buttonRight.setImageDrawable(clickedDrawable);
+				SendRightUp();
+				
 			}
 			return true;
 		}
 	};
+	
+	private OnTouchListener OnTouchButtonLeft = new OnTouchListener() {
+
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+
+				SendLeftDown();
+			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
+
+				SendLeftUp();
+			}
+			return true;
+		}
+	};
+
 	private OnTouchListener OnTouchButtonFocus = new OnTouchListener() {
 
 		@Override
@@ -312,31 +329,87 @@ public class MainActivity extends Activity {
 				_focusOn = true;
 
 			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
-				Connection.Send("down left");
-				Connection.Send("up left");
+
+				if (Settings.getSWITCH_BUTTONS()) {
+					Connection.Send("down|right");
+					Connection.Send("up|right");
+				} else {
+					Connection.Send("down|left");
+					Connection.Send("up|left");
+				}
 				Drawable clickedDrawable = getResources().getDrawable(R.drawable.focus);
 				_buttonFocus.setImageDrawable(clickedDrawable);
 				_focusOn = false;
-			} 
-			return true;
-		}
-	};
-
-	private OnTouchListener OnTouchButtonLeft = new OnTouchListener() {
-
-		@Override
-		public boolean onTouch(View v, MotionEvent event) {
-			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-				Connection.Send("down left");
-				Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbuttonclick);
-				_buttonLeft.setImageDrawable(clickedDrawable);
-			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
-				Connection.Send("up left");
-				Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbutton);
-				_buttonLeft.setImageDrawable(clickedDrawable);
 			}
 			return true;
 		}
 	};
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			SendLeftDown();
+		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+			SendRightDown();
+		}
+
+		return keyCode== KeyEvent.KEYCODE_VOLUME_UP || keyCode==KeyEvent.KEYCODE_VOLUME_DOWN;
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			SendLeftUp();
+		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+			SendRightUp();
+		}
+
+		return keyCode== KeyEvent.KEYCODE_VOLUME_UP || keyCode==KeyEvent.KEYCODE_VOLUME_DOWN;
+	};
+	
+	private void SendLeftUp()
+	{
+		if (Settings.getSWITCH_BUTTONS())
+			Connection.Send("up|right");
+		else
+			Connection.Send("up|left");
+
+		Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbutton);
+		_buttonLeft.setImageDrawable(clickedDrawable);
+	}
+	
+	private void SendLeftDown()
+	{
+
+		if (Settings.getSWITCH_BUTTONS())
+			Connection.Send("down|right");
+		else
+			Connection.Send("down|left");
+
+		Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbuttonclick);
+		_buttonLeft.setImageDrawable(clickedDrawable);
+	}
+	private void SendRightUp()
+	{
+		if (Settings.getSWITCH_BUTTONS())
+			Connection.Send("up|left");
+		else
+			Connection.Send("up|right");
+
+		Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbutton);
+		_buttonRight.setImageDrawable(clickedDrawable);
+	}
+	private void SendRightDown()
+	{
+		if (Settings.getSWITCH_BUTTONS())
+			Connection.Send("down|left");
+		else
+			Connection.Send("down|right");
+
+		Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbuttonclick);
+		_buttonRight.setImageDrawable(clickedDrawable);
+	}
+	
 }
