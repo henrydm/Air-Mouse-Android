@@ -1,23 +1,23 @@
 /********************************************************************************************
-*	Copyright(C) 2014  Enric del Molino 													*
-*	http://www.androidairmouse.com															*
-*	enricdelmolino@gmail.com																*
-*																							*
-*	This file is part of Air Mouse Client for Android.										*
-*																							*
-*   Air Mouse Client for Android is free software: you can redistribute it and/or modify	*
-*   it under the terms of the GNU General Public License as published by					*
-*   the Free Software Foundation, either version 3 of the License, or						*
-*   (at your option) any later version.														*
-*																							*
-*   Air Mouse Client for Android is distributed in the hope that it will be useful,			*
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of							*
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the							*
-*   GNU General Public License for more details.											*
-*																							*
-*   You should have received a copy of the GNU General Public License						*
-*   along with Air Mouse Server for Android.  If not, see <http://www.gnu.org/licenses/>.	*
-*********************************************************************************************/
+ *	Copyright(C) 2014  Enric del Molino 													*
+ *	http://www.androidairmouse.com															*
+ *	enricdelmolino@gmail.com																*
+ *																							*
+ *	This file is part of Air Mouse Client for Android.										*
+ *																							*
+ *   Air Mouse Client for Android is free software: you can redistribute it and/or modify	*
+ *   it under the terms of the GNU General Public License as published by					*
+ *   the Free Software Foundation, either version 3 of the License, or						*
+ *   (at your option) any later version.														*
+ *																							*
+ *   Air Mouse Client for Android is distributed in the hope that it will be useful,			*
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of							*
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the							*
+ *   GNU General Public License for more details.											*
+ *																							*
+ *   You should have received a copy of the GNU General Public License						*
+ *   along with Air Mouse Server for Android.  If not, see <http://www.gnu.org/licenses/>.	*
+ *********************************************************************************************/
 
 package henry.airmouse3;
 
@@ -30,6 +30,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,13 +47,15 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	ImageView _buttonLeft, _buttonRight, _buttonWheel, _buttonFocus;
-	private Boolean _wheelScsrolling = false;
-	private Boolean _focusOn = false;
+	private boolean _startActivity = false;
+	private boolean _wheelScsrolling = false;
+	private boolean _focusOn = false;
+	private boolean _anyKeyPressedWhileFocusOn = false;
 	private float _lastWheelPixel = -1;
 	private byte _wheelStep = 0;
+
 	private OrientationEventListener myOrientationEventListener;
 
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -70,21 +73,24 @@ public class MainActivity extends Activity {
 		_buttonFocus = (ImageView) findViewById(R.id.imageViewButtonFocus);
 		_buttonFocus.setOnTouchListener(OnTouchButtonFocus);
 
-		myOrientationEventListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI) {
+		myOrientationEventListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
 
 			@Override
 			public void onOrientationChanged(int arg0) {
 				if (arg0 != -1) {
-					Connection.Send(String.valueOf(arg0));
-					if (arg0 > 80 && arg0 < 100) {
-
-						Intent Intent = new Intent(getApplicationContext(), KeyboardActivity.class);
-						startActivity(Intent);
+					//Log.i("Log Scan", String.valueOf(arg0));
+					//Connection.Send(String.valueOf(arg0)); /*Just for debugging*/
+					if (arg0 > 85 && arg0 < 95) {
+						_startActivity = true;
+						Intent intent = new Intent(getApplicationContext(), KeyboardActivity.class);
+						intent.putExtra("reverse", true);
+						startActivity(intent);
 					}
-					if (arg0 > 255 && arg0 < 285) {
-
-						Intent Intent = new Intent(getApplicationContext(), KeyboardActivity.class);
-						startActivity(Intent);
+					if (arg0 > 265 && arg0 < 275) {
+						_startActivity = true;
+						Intent intent = new Intent(getApplicationContext(), KeyboardActivity.class);
+						intent.putExtra("reverse", false);
+						startActivity(intent);
 					}
 				}
 			}
@@ -114,7 +120,7 @@ public class MainActivity extends Activity {
 		}
 
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -126,6 +132,9 @@ public class MainActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		ReleaseMotionListeners();
+		if (!_startActivity) {
+			finish();
+		}
 		// wakelock.release();
 
 	};
@@ -138,14 +147,16 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onStop() {
-		
+
 		super.onStop();
 	}
-	@Override protected void onDestroy() {
+
+	@Override
+	protected void onDestroy() {
 		Connection.Disconnect();
 		super.onDestroy();
 	};
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -163,6 +174,7 @@ public class MainActivity extends Activity {
 			return true;
 
 		case R.id.menu_settings:
+			_startActivity = true;
 			Intent Intent = new Intent(this, SettingsActivity.class);
 			startActivity(Intent);
 			return true;
@@ -181,7 +193,7 @@ public class MainActivity extends Activity {
 		MotionProvider.SetOnCalibrationFinished(OnCalibrationFinished);
 		MotionProvider.RegisterEvents(getApplicationContext());
 	}
-	
+
 	private void ReleaseMotionListeners() {
 		if (myOrientationEventListener != null) {
 			myOrientationEventListener.disable();
@@ -198,7 +210,7 @@ public class MainActivity extends Activity {
 			ShowToast("Calibration OK");
 		}
 	};
-	
+
 	private OnMotionChangedListener OnMotionChanged = new OnMotionChangedListener() {
 
 		@Override
@@ -234,6 +246,10 @@ public class MainActivity extends Activity {
 		@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
+			if (_focusOn) {
+				_anyKeyPressedWhileFocusOn = true;
+			}
+
 			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
 				Drawable clickedDrawable = getResources().getDrawable(R.drawable.midbuttonclick);
 				_buttonWheel.setImageDrawable(clickedDrawable);
@@ -312,27 +328,31 @@ public class MainActivity extends Activity {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+			if (_focusOn) {
+				_anyKeyPressedWhileFocusOn = true;
+			}
 
+			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
 				SendRightDown();
 
 			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
 				SendRightUp();
-				
 			}
 			return true;
 		}
 	};
-	
+
 	private OnTouchListener OnTouchButtonLeft = new OnTouchListener() {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+			if (_focusOn) {
+				_anyKeyPressedWhileFocusOn = true;
+			}
 
+			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
 				SendLeftDown();
 			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
-
 				SendLeftUp();
 			}
 			return true;
@@ -344,19 +364,22 @@ public class MainActivity extends Activity {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-
 				Drawable clickedDrawable = getResources().getDrawable(R.drawable.focusclick);
 				_buttonFocus.setImageDrawable(clickedDrawable);
 				_focusOn = true;
 
 			} else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
 
-				if (Settings.getSWITCH_BUTTONS()) {
-					Connection.Send("down|right");
-					Connection.Send("up|right");
+				if (!_anyKeyPressedWhileFocusOn) {
+					if (Settings.getSWITCH_BUTTONS()) {
+						Connection.Send("down|right");
+						Connection.Send("up|right");
+					} else {
+						Connection.Send("down|left");
+						Connection.Send("up|left");
+					}
 				} else {
-					Connection.Send("down|left");
-					Connection.Send("up|left");
+					_anyKeyPressedWhileFocusOn = false;
 				}
 				Drawable clickedDrawable = getResources().getDrawable(R.drawable.focus);
 				_buttonFocus.setImageDrawable(clickedDrawable);
@@ -365,33 +388,55 @@ public class MainActivity extends Activity {
 			return true;
 		}
 	};
-	
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			SendLeftDown();
+			if (Settings.getSWITCH_VOLUME_BUTTONS_RAISE_CLICK()) {
+				SendLeftDown();
+			} else {
+				SendVolumeDown();
+			}
 		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-			SendRightDown();
+			if (Settings.getSWITCH_VOLUME_BUTTONS_RAISE_CLICK()) {
+				SendRightDown();
+			} else {
+				SendVolumeUp();
+			}
+		} else {
+			return super.onKeyDown(keyCode, event);
 		}
 
-		return keyCode== KeyEvent.KEYCODE_VOLUME_UP || keyCode==KeyEvent.KEYCODE_VOLUME_DOWN;
+		return keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN;
 	}
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			SendLeftUp();
-		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-			SendRightUp();
-		}
 
-		return keyCode== KeyEvent.KEYCODE_VOLUME_UP || keyCode==KeyEvent.KEYCODE_VOLUME_DOWN;
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			if (Settings.getSWITCH_VOLUME_BUTTONS_RAISE_CLICK()) {
+				SendLeftUp();
+			}
+		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+			if (Settings.getSWITCH_VOLUME_BUTTONS_RAISE_CLICK()) {
+				SendRightUp();
+			}
+		} else {
+			return super.onKeyUp(keyCode, event);
+		}
+		return keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN;
 	};
-	
-	private void SendLeftUp()
-	{
+
+	private void SendVolumeUp() {
+		Connection.Send("volume|up");
+	}
+
+	private void SendVolumeDown() {
+		Connection.Send("volume|down");
+	}
+
+	private void SendLeftUp() {
 		if (Settings.getSWITCH_BUTTONS())
 			Connection.Send("up|right");
 		else
@@ -400,9 +445,8 @@ public class MainActivity extends Activity {
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbutton);
 		_buttonLeft.setImageDrawable(clickedDrawable);
 	}
-	
-	private void SendLeftDown()
-	{
+
+	private void SendLeftDown() {
 
 		if (Settings.getSWITCH_BUTTONS())
 			Connection.Send("down|right");
@@ -412,8 +456,8 @@ public class MainActivity extends Activity {
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbuttonclick);
 		_buttonLeft.setImageDrawable(clickedDrawable);
 	}
-	private void SendRightUp()
-	{
+
+	private void SendRightUp() {
 		if (Settings.getSWITCH_BUTTONS())
 			Connection.Send("up|left");
 		else
@@ -422,8 +466,8 @@ public class MainActivity extends Activity {
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbutton);
 		_buttonRight.setImageDrawable(clickedDrawable);
 	}
-	private void SendRightDown()
-	{
+
+	private void SendRightDown() {
 		if (Settings.getSWITCH_BUTTONS())
 			Connection.Send("down|left");
 		else
@@ -432,5 +476,5 @@ public class MainActivity extends Activity {
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbuttonclick);
 		_buttonRight.setImageDrawable(clickedDrawable);
 	}
-	
+
 }

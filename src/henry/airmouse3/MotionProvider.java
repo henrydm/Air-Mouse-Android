@@ -29,6 +29,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 interface OnMotionChangedListener {
 	public void OnMotionChanged(float x, float y);
@@ -67,6 +68,7 @@ public class MotionProvider implements SensorEventListener {
 	}
 
 	protected static void ReleaseMotionListener() {
+		
 		_motionListener = null;
 	}
 
@@ -109,8 +111,13 @@ public class MotionProvider implements SensorEventListener {
 		else {
 			long now = new Date().getTime();
 
-			if (now - _lastSensorChange > Settings.getMIN_MILLIS_TOPDATE()) {
+			if ((now - _lastSensorChange) > Settings.getMIN_MILLIS_TOPDATE()) {
 
+				Log.i("Log Scan","0 "+String.valueOf(event.values[0]));
+				Log.i("Log Scan","1 "+String.valueOf(event.values[1]));
+				Log.i("Log Scan","2 "+String.valueOf(event.values[2]));
+				//Log.i("Delay",String.valueOf(now-_lastSensorChange));
+				//Log.i("MinDelay = ",String.valueOf(Settings.getMIN_MILLIS_TOPDATE()));
 				float finalX = x - Settings.getCALIBRATION_DELTAX();
 				float finalY = y - Settings.getCALIBRATION_DELTAY();
 

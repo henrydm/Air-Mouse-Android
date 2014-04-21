@@ -28,6 +28,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -47,6 +48,7 @@ public class KeyboardActivity extends Activity {
 	EditText _editText;
 	String _lastTest = "";
 	Timer _sendTimer = new Timer();
+	final int _timeToWaitBeforeSendMessage = 1500;
 
 	private void Send(final String str) {
 		if (_sendTimer != null) {
@@ -61,7 +63,7 @@ public class KeyboardActivity extends Activity {
 				SendNow(str);
 
 			}
-		}, 3000);
+		}, _timeToWaitBeforeSendMessage);
 	}
 
 	private void SendNow(final String str) {
@@ -76,6 +78,11 @@ public class KeyboardActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		boolean reverse = getIntent().getExtras().getBoolean("reverse",false);
+		if (reverse)
+		{
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+		}
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_keyboard);
 

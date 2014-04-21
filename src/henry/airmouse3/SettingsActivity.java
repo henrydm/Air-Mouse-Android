@@ -37,6 +37,7 @@ public class SettingsActivity extends Activity {
 	EditText _editTextAcceleration;
 	EditText _editTextPort;
 	ToggleButton _toggleSwitchButtons;
+	ToggleButton _toggleVolumeButtons;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,6 +49,7 @@ public class SettingsActivity extends Activity {
 		_editTextMinWheelMovement = (EditText) findViewById(R.id.EditTextMinWheelMovement);
 		_editTextPort= (EditText) findViewById(R.id.editTextPort);
 		_toggleSwitchButtons=(ToggleButton) findViewById(R.id.toggleButtonSwitchButtons);
+		_toggleVolumeButtons=(ToggleButton) findViewById(R.id.ToggleButtonVolumeButtons);
 	}
 	
 	private void LoadSettingsToUI()
@@ -58,6 +60,7 @@ public class SettingsActivity extends Activity {
 		_editTextAcceleration.setText(String.valueOf(Settings.getMOTION_FACTOR()));
 		_editTextPort.setText(String.valueOf(Settings.getPORT()));
 		_toggleSwitchButtons.setChecked(Settings.getSWITCH_BUTTONS());
+		_toggleVolumeButtons.setChecked(Settings.getSWITCH_VOLUME_BUTTONS_RAISE_CLICK());
 	}
 	
 	private void SaveSettingsFromUI()
@@ -68,6 +71,7 @@ public class SettingsActivity extends Activity {
 		Settings.setMOTION_FACTOR(Integer.valueOf(_editTextAcceleration.getText().toString()));
 		Settings.setPORT(Integer.valueOf(_editTextPort.getText().toString()));
 		Settings.setSWITCH_BUTTONS(_toggleSwitchButtons.isChecked());
+		Settings.setSWITCH_VOLUME_BUTTONS_RAISE_CLICK(_toggleVolumeButtons.isChecked());
 	}
 	
 	@Override

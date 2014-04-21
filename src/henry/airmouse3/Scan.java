@@ -50,6 +50,7 @@ public class Scan {
 	public static ErrorCode ERROR;
 	private static OnScanInterruptedListener _listener;
 
+	
 	public static void SetOnScanInterrupted(OnScanInterruptedListener listener) {
 		_listener = listener;
 	}
@@ -121,10 +122,12 @@ public class Scan {
 			}
 			try {
 				socket = new DatagramSocket();
-				socket.setSoTimeout(500);
+				socket.setSoTimeout(50);
 				socket.connect(new InetSocketAddress(address, Settings.getPORT()));
 
-				byte[] bytes = "hola".getBytes("UTF-8");
+				
+				
+				byte[] bytes = ("hola|"+android.os.Build.MANUFACTURER +"#"+android.os.Build.MODEL).getBytes("UTF-8");
 				DatagramPacket packetSend = new DatagramPacket(bytes, bytes.length);
 
 				byte[] data = new byte[7];

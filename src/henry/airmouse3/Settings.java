@@ -37,21 +37,20 @@ public class Settings {
 	private static final String KEY_CALIBRATION_DELTAX = "CALIBRATION_DELTAX";
 	private static final String KEY_CALIBRATION_DELTAY = "CALIBRATION_DELTAY";
 	private static final String KEY_SWITCH_BUTTONS = "SWITCH_BUTTONS";
+	private static final String KEY_VOLUME_BUTTONS_RAISE_CLICK = "VOLUME_BUTTONS_RAISE_CLICK";
 	private static final String KEY_FIRST_USE = "FIRST_USE";
 
 	private final static int DEFAULT_MIN_WHEEL_PIXELS = 10;
-	private final static int DEFAULT_MIN_MILLIS_TOPDATE=10;
+	private final static int DEFAULT_MIN_MILLIS_TOPDATE=1500;
 	private final static int DEFAULT_PORT = 6000;
 	private final static int DEFAULT_MOTION_FACTOR = 50;
 	private final static int DEFAULT_MIN_MOVEMENT=1;
 	private final static boolean SWITCH_BUTTONS= false;
+	private final static boolean VOLUME_BUTTONS_RAISE_CLICK= false;
 	private final static boolean FIRST_USE= true;
 	
 	public static void LoadSettings(Context context) {
 		mContext = context;
-//		SharedPreferences.Editor editor = getSettings().edit();
-//		editor.remove(KEY_FIRST_USE);
-//		editor.commit();
 	}
 
 	private static SharedPreferences getSettings() {
@@ -137,6 +136,14 @@ public class Settings {
 
 	protected static void setSWITCH_BUTTONS(boolean value) {
 		PushBool(KEY_SWITCH_BUTTONS, value);
+	}
+	
+	protected static boolean getSWITCH_VOLUME_BUTTONS_RAISE_CLICK() {
+		return getSettings().getBoolean(KEY_VOLUME_BUTTONS_RAISE_CLICK, VOLUME_BUTTONS_RAISE_CLICK);
+	}
+
+	protected static void setSWITCH_VOLUME_BUTTONS_RAISE_CLICK(boolean value) {
+		PushBool(KEY_VOLUME_BUTTONS_RAISE_CLICK, value);
 	}
 	
 	protected static boolean getFISRT_USE() {

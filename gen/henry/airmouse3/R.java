@@ -62,30 +62,32 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int wifi3=0x7f020015;
     }
     public static final class id {
-        public static final int EditTextAcceleration=0x7f0b0012;
-        public static final int EditTextMillisecondstoUpdate=0x7f0b0011;
-        public static final int EditTextMinMovement=0x7f0b000f;
-        public static final int EditTextMinWheelMovement=0x7f0b0010;
+        public static final int EditTextAcceleration=0x7f0b0013;
+        public static final int EditTextMillisecondstoUpdate=0x7f0b0012;
+        public static final int EditTextMinMovement=0x7f0b0010;
+        public static final int EditTextMinWheelMovement=0x7f0b0011;
         public static final int TextViewMillisecondstoUpdate=0x7f0b000b;
         public static final int TextViewMinMovement=0x7f0b0009;
         public static final int TextViewMinWheelMovement=0x7f0b000a;
         public static final int TextViewPort=0x7f0b000d;
         public static final int TextViewSwitchButtons=0x7f0b000e;
-        public static final int action_settings=0x7f0b0017;
+        public static final int TextViewVolumeButtons=0x7f0b000f;
+        public static final int ToggleButtonVolumeButtons=0x7f0b0016;
+        public static final int action_settings=0x7f0b0019;
         public static final int customEdit1=0x7f0b0001;
-        public static final int editTextPort=0x7f0b0013;
+        public static final int editTextPort=0x7f0b0014;
         public static final int imageViewButtonFocus=0x7f0b0005;
         public static final int imageViewButtonLeft=0x7f0b0006;
         public static final int imageViewButtonRight=0x7f0b0008;
         public static final int imageViewButtonWheel=0x7f0b0007;
         public static final int imageViewWifi=0x7f0b0004;
         public static final int layoutKeyBoard=0x7f0b0000;
-        public static final int menu_calibrate=0x7f0b0015;
-        public static final int menu_settings=0x7f0b0016;
+        public static final int menu_calibrate=0x7f0b0017;
+        public static final int menu_settings=0x7f0b0018;
         public static final int textViewAcceleration=0x7f0b000c;
         public static final int textViewLoadError=0x7f0b0003;
         public static final int textViewLoadInfo=0x7f0b0002;
-        public static final int toggleButtonSwitchButtons=0x7f0b0014;
+        public static final int toggleButtonSwitchButtons=0x7f0b0015;
     }
     public static final class layout {
         public static final int activity_keyboard=0x7f030000;
