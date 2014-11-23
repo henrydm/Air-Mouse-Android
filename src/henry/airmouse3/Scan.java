@@ -21,10 +21,15 @@
 
 package henry.airmouse3;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Locale;
@@ -77,6 +82,8 @@ public class Scan {
 
 		ERROR = ErrorCode.None;
 		DatagramSocket ret = null;
+		
+		
 		long startScan = new Date().getTime();
 
 		ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -113,7 +120,7 @@ public class Scan {
 			}
 			ip[3] = (byte) i;
 			InetAddress address = null;
-			DatagramSocket socket = null;
+			Socket testSocket = null;
 
 			try {
 				address = InetAddress.getByAddress(ip);
@@ -121,33 +128,37 @@ public class Scan {
 				continue;
 			}
 			try {
-				socket = new DatagramSocket();
-				socket.setSoTimeout(50);
-				socket.connect(new InetSocketAddress(address, Settings.getPORT()));
-
+				//Define test socket
+				testSocket = new Socket(address, Settings.getPORT());
+				testSocket.setSoTimeout(100);
 				
+				DataOutputStream outToServer = new DataOutputStream(testSocket.getOutputStream());  
+				BufferedReader inFromServer = new BufferedReader(new InputStreamReader(testSocket.getInputStream()));
 				
 				byte[] bytes = ("hola|"+android.os.Build.MANUFACTURER +"#"+android.os.Build.MODEL).getBytes("UTF-8");
-				DatagramPacket packetSend = new DatagramPacket(bytes, bytes.length);
-
-				byte[] data = new byte[7];
-				DatagramPacket packet = new DatagramPacket(data, data.length);
-
-				socket.send(packetSend);
-
-				socket.receive(packet);
-
-				String received = new String(data, "UTF-8");
+				outToServer.write(bytes) ;
 				
-				if (received.equals("que ase"))
-					ret = socket;
+				
+				String inStr = inFromServer.readLine();
+	
+				if (inStr.equals("que ase"))
+				{
+					
+					ret = new DatagramSocket();
+					ret.connect(new InetSocketAddress(address, Settings.getPORT()));
+				}
+				
+
 
 			} catch (Exception e) {
-				if (socket != null) {
-					if (socket.isConnected())
-						socket.disconnect();
-					
-					socket.close();
+				if (testSocket != null) {
+//					if (testSocket.isConnected())
+//						testSocket.disconnect();
+					try {
+						testSocket.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 				}
 
 			} finally {

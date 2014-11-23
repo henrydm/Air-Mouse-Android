@@ -1,23 +1,23 @@
 /********************************************************************************************
-*	Copyright(C) 2014  Enric del Molino 													*
-*	http://www.androidairmouse.com															*
-*	enricdelmolino@gmail.com																*
-*																							*
-*	This file is part of Air Mouse Client for Android.										*
-*																							*
-*   Air Mouse Client for Android is free software: you can redistribute it and/or modify	*
-*   it under the terms of the GNU General Public License as published by					*
-*   the Free Software Foundation, either version 3 of the License, or						*
-*   (at your option) any later version.														*
-*																							*
-*   Air Mouse Client for Android is distributed in the hope that it will be useful,			*
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of							*
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the							*
-*   GNU General Public License for more details.											*
-*																							*
-*   You should have received a copy of the GNU General Public License						*
-*   along with Air Mouse Server for Android.  If not, see <http://www.gnu.org/licenses/>.	*
-*********************************************************************************************/
+ *	Copyright(C) 2014  Enric del Molino 													*
+ *	http://www.androidairmouse.com															*
+ *	enricdelmolino@gmail.com																*
+ *																							*
+ *	This file is part of Air Mouse Client for Android.										*
+ *																							*
+ *   Air Mouse Client for Android is free software: you can redistribute it and/or modify	*
+ *   it under the terms of the GNU General Public License as published by					*
+ *   the Free Software Foundation, either version 3 of the License, or						*
+ *   (at your option) any later version.														*
+ *																							*
+ *   Air Mouse Client for Android is distributed in the hope that it will be useful,			*
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of							*
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the							*
+ *   GNU General Public License for more details.											*
+ *																							*
+ *   You should have received a copy of the GNU General Public License						*
+ *   along with Air Mouse Server for Android.  If not, see <http://www.gnu.org/licenses/>.	*
+ *********************************************************************************************/
 
 package henry.airmouse3;
 
@@ -59,17 +59,15 @@ public class LoadApp extends Activity {
 		boolean gyroExists = packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
 
 		if (!gyroExists) {
-			AlertDialog.Builder myAlertDialog = new AlertDialog.Builder(this);
-			myAlertDialog.setTitle(R.string.app_name);
-			myAlertDialog.setMessage("Unfortunately your phone is not equipped with gyroscope, try buying a new phone");
+			SetTextError("This phone is not equiped with gyroscope, air mouse function won't be available");
+			Settings.setMODE(Settings.Mode.Touchpad);
 		}
 
-		else {
-			StartLoopAnimation();
+		StartLoopAnimation();
 
-			Scan.SetOnScanInterrupted(OnScanInterrupted);
-			Scan.ScanIpsAsync(this.getBaseContext());
-		}
+		Scan.SetOnScanInterrupted(OnScanInterrupted);
+		Scan.ScanIpsAsync(this.getBaseContext());
+
 	}
 
 	private void StartLoopAnimation() {
@@ -81,16 +79,20 @@ public class LoadApp extends Activity {
 			public void run() {
 				Drawable clickedDrawable = null;
 				if (_wifiStep == 0)
-					clickedDrawable = getResources().getDrawable(R.drawable.wifi0);
+					clickedDrawable = getResources().getDrawable(
+							R.drawable.wifi0);
 
 				else if (_wifiStep == 1)
-					clickedDrawable = getResources().getDrawable(R.drawable.wifi1);
+					clickedDrawable = getResources().getDrawable(
+							R.drawable.wifi1);
 
 				else if (_wifiStep == 2)
-					clickedDrawable = getResources().getDrawable(R.drawable.wifi2);
+					clickedDrawable = getResources().getDrawable(
+							R.drawable.wifi2);
 
 				else if (_wifiStep == 3)
-					clickedDrawable = getResources().getDrawable(R.drawable.wifi3);
+					clickedDrawable = getResources().getDrawable(
+							R.drawable.wifi3);
 
 				SetImage(clickedDrawable);
 
@@ -150,7 +152,8 @@ public class LoadApp extends Activity {
 			StopLoopAnimation();
 			SetTextInfo("Connected");
 			Connection.CreateConnection(socket);
-			Intent Intent = new Intent(getApplicationContext(), MainActivity.class);
+			Intent Intent = new Intent(getApplicationContext(),
+					MainActivity.class);
 			finish();
 			startActivity(Intent);
 
@@ -166,7 +169,10 @@ public class LoadApp extends Activity {
 
 			} else if (Scan.ERROR == ErrorCode.Time_Out) {
 				String ssid = Scan.GetCurrentSsid(getApplicationContext());
-				SetTextError("No Server found in " + ssid + ". Please ensure AirMouse Server is running on a pc connected to " + ssid
+				SetTextError("No Server found in "
+						+ ssid
+						+ ". Please ensure AirMouse Server is running on a pc connected to "
+						+ ssid
 						+ "\n You can download AirMouse Server for Windows from http://www.airmouse.com");
 			} else {
 				SetTextError("WIFI unknown error");
