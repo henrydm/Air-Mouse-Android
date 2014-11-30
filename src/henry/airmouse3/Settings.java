@@ -32,9 +32,12 @@ public class Settings {
 	private static Context mContext;
 	private static final String SHARED_PREFS_FILE = "HMPrefs";
 
+	private static final String KEY_PIXEL_TOLERANCE_PERCENTAGE = "PIXEL_TOLERANCE";
 	private static final String KEY_MIN_WHEEL_PIXELS = "MIN_WHEEL_PIXELS";
 	private static final String KEY_MIN_MILLIS_TOPDATE = "MIN_MILLIS_TOPDATE";
 	private static final String KEY_PORT = "PORT";
+	private static final String KEY_TOUCHPAD_SWAP_AXIS = "TOUCHPAD_SWAP_AXIS";
+	private static final String KEY_TOUCHPAD_MOTION_FACTOR = "TOUCHPAD_MOTION_FACTOR";
 	private static final String KEY_MOTION_FACTOR = "MOTION_FACTOR";
 	private static final String KEY_MIN_MOVEMENT = "MIN_MOVEMENT";
 	private static final String KEY_CALIBRATION_DELTAX = "CALIBRATION_DELTAX";
@@ -44,9 +47,15 @@ public class Settings {
 	private static final String KEY_FIRST_USE = "FIRST_USE";
 	private static final String KEY_MODE = "MODE";
 
+	
+	
+	
+	private final static float DEFAULT_PIXEL_TOLERANCE_PERCENTAGE = 0.01f;
 	private final static int DEFAULT_MIN_WHEEL_PIXELS = 10;
 	private final static int DEFAULT_MIN_MILLIS_TOPDATE = 1500;
 	private final static int DEFAULT_PORT = 6000;
+	private final static boolean DEFAULT_TOUCHPAD_SWAP_AXIS = false;
+	private final static float DEFAULT_TOUCHPAD_MOTION_FACTOR = 1f;
 	private final static int DEFAULT_MOTION_FACTOR = 50;
 	private final static int DEFAULT_MIN_MOVEMENT = 1;
 	private final static boolean DEFAULT_SWITCH_BUTTONS = false;
@@ -61,6 +70,13 @@ public class Settings {
 	
 	//GETTERS & SETTERS
 
+	protected static float getPIXEL_TOLERANCE_PERCENTAGE() {
+		return getSettings().getFloat(KEY_PIXEL_TOLERANCE_PERCENTAGE, DEFAULT_PIXEL_TOLERANCE_PERCENTAGE);
+	}
+	protected static void setPIXEL_TOLERANCE_PERCENTAGE(float value) {
+		PushFloat(KEY_PIXEL_TOLERANCE_PERCENTAGE, value);
+	}
+	
 	protected static int getMIN_WHEEL_PIXELS() {
 		return getSettings().getInt(KEY_MIN_WHEEL_PIXELS, DEFAULT_MIN_WHEEL_PIXELS);
 	}
@@ -80,6 +96,20 @@ public class Settings {
 	}
 	protected static void setPORT(int value) {
 		PushInt(KEY_PORT, value);
+	}
+	
+	protected static boolean getTOUCHPAD_SWAP_AXIS() {
+		return getSettings().getBoolean(KEY_TOUCHPAD_SWAP_AXIS, DEFAULT_TOUCHPAD_SWAP_AXIS);
+	}
+	protected static void setTOUCHPAD_MOTION_FACTOR(boolean value) {
+		PushBool(KEY_TOUCHPAD_SWAP_AXIS, value);
+	}
+	
+	protected static float getTOUCHPAD_MOTION_FACTOR() {
+		return getSettings().getFloat(KEY_TOUCHPAD_MOTION_FACTOR, DEFAULT_TOUCHPAD_MOTION_FACTOR);
+	}
+	protected static void setTOUCHPAD_MOTION_FACTOR(float value) {
+		PushFloat(KEY_TOUCHPAD_MOTION_FACTOR, value);
 	}
 	
 	protected static int getMOTION_FACTOR() {

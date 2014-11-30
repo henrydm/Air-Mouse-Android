@@ -79,20 +79,16 @@ public class LoadApp extends Activity {
 			public void run() {
 				Drawable clickedDrawable = null;
 				if (_wifiStep == 0)
-					clickedDrawable = getResources().getDrawable(
-							R.drawable.wifi0);
+					clickedDrawable = getResources().getDrawable(R.drawable.wifi0);
 
 				else if (_wifiStep == 1)
-					clickedDrawable = getResources().getDrawable(
-							R.drawable.wifi1);
+					clickedDrawable = getResources().getDrawable(R.drawable.wifi1);
 
 				else if (_wifiStep == 2)
-					clickedDrawable = getResources().getDrawable(
-							R.drawable.wifi2);
+					clickedDrawable = getResources().getDrawable(R.drawable.wifi2);
 
 				else if (_wifiStep == 3)
-					clickedDrawable = getResources().getDrawable(
-							R.drawable.wifi3);
+					clickedDrawable = getResources().getDrawable(R.drawable.wifi3);
 
 				SetImage(clickedDrawable);
 
@@ -152,10 +148,15 @@ public class LoadApp extends Activity {
 			StopLoopAnimation();
 			SetTextInfo("Connected");
 			Connection.CreateConnection(socket);
-			Intent Intent = new Intent(getApplicationContext(),
-					MainActivity.class);
+
+			Intent intent;
+			if (Settings.getMODE() == Settings.Mode.Gyroscope) {
+				intent = new Intent(getApplicationContext(), MainActivity.class);
+			} else
+				intent = new Intent(getApplicationContext(), TouchPadActivity.class);
+
 			finish();
-			startActivity(Intent);
+			startActivity(intent);
 
 		}
 
@@ -169,10 +170,7 @@ public class LoadApp extends Activity {
 
 			} else if (Scan.ERROR == ErrorCode.Time_Out) {
 				String ssid = Scan.GetCurrentSsid(getApplicationContext());
-				SetTextError("No Server found in "
-						+ ssid
-						+ ". Please ensure AirMouse Server is running on a pc connected to "
-						+ ssid
+				SetTextError("No Server found in " + ssid + ". Please ensure AirMouse Server is running on a pc connected to " + ssid
 						+ "\n You can download AirMouse Server for Windows from http://www.airmouse.com");
 			} else {
 				SetTextError("WIFI unknown error");

@@ -100,8 +100,7 @@ public class MainActivity extends Activity {
 		if (Settings.getFISRT_USE()) {
 			AlertDialog.Builder myAlertDialog = new AlertDialog.Builder(this);
 			myAlertDialog.setTitle(R.string.app_name);
-			myAlertDialog
-					.setMessage("Calibration sensor needs to be calibrated, do you want to calibrate now? just place your phone over a flat surface and click OK");
+			myAlertDialog.setMessage("Calibration sensor needs to be calibrated, do you want to calibrate now? just place your phone over a flat surface and click OK");
 			myAlertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface arg0, int arg1) {
@@ -160,7 +159,7 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		// getMenuInflater().inflate(R.menu.main, menu);
-		getMenuInflater().inflate(R.layout.menu, menu);
+		getMenuInflater().inflate(R.layout.menugyro, menu);
 		return true;
 	}
 
@@ -223,11 +222,7 @@ public class MainActivity extends Activity {
 			float finalY = y * motionFactor;
 
 			if (Math.abs(finalX) > Settings.getMIN_MOVEMENT() || Math.abs(finalY) > Settings.getMIN_MOVEMENT()) {
-				String xStr = Float.toString(finalX);
-				String yStr = Float.toString(finalY);
-				final String toSend = xStr + "|" + yStr;
-				Connection.Send(toSend);
-
+				Connection.Send(Commands.GetDelta(finalX, finalY));
 			}
 		}
 	};
@@ -371,11 +366,11 @@ public class MainActivity extends Activity {
 
 				if (!_anyKeyPressedWhileFocusOn) {
 					if (Settings.getSWITCH_BUTTONS()) {
-						Connection.Send("down|right");
-						Connection.Send("up|right");
+						Connection.Send(Commands.DownRight);
+						Connection.Send(Commands.UpRight);
 					} else {
-						Connection.Send("down|left");
-						Connection.Send("up|left");
+						Connection.Send(Commands.DownLeft);
+						Connection.Send(Commands.UpLeft);
 					}
 				} else {
 					_anyKeyPressedWhileFocusOn = false;
@@ -428,18 +423,18 @@ public class MainActivity extends Activity {
 	};
 
 	private void SendVolumeUp() {
-		Connection.Send("volume|up");
+		Connection.Send(Commands.VolumeUp);
 	}
 
 	private void SendVolumeDown() {
-		Connection.Send("volume|down");
+		Connection.Send(Commands.VolumeDown);
 	}
 
 	private void SendLeftUp() {
 		if (Settings.getSWITCH_BUTTONS())
-			Connection.Send("up|right");
+			Connection.Send(Commands.UpRight);
 		else
-			Connection.Send("up|left");
+			Connection.Send(Commands.UpLeft);
 
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbutton);
 		_buttonLeft.setImageDrawable(clickedDrawable);
@@ -448,9 +443,9 @@ public class MainActivity extends Activity {
 	private void SendLeftDown() {
 
 		if (Settings.getSWITCH_BUTTONS())
-			Connection.Send("down|right");
+			Connection.Send(Commands.DownRight);
 		else
-			Connection.Send("down|left");
+			Connection.Send(Commands.DownLeft);
 
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.leftbuttonclick);
 		_buttonLeft.setImageDrawable(clickedDrawable);
@@ -458,9 +453,9 @@ public class MainActivity extends Activity {
 
 	private void SendRightUp() {
 		if (Settings.getSWITCH_BUTTONS())
-			Connection.Send("up|left");
+			Connection.Send(Commands.UpLeft);
 		else
-			Connection.Send("up|right");
+			Connection.Send(Commands.UpRight);
 
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbutton);
 		_buttonRight.setImageDrawable(clickedDrawable);
@@ -468,9 +463,9 @@ public class MainActivity extends Activity {
 
 	private void SendRightDown() {
 		if (Settings.getSWITCH_BUTTONS())
-			Connection.Send("down|left");
+			Connection.Send(Commands.DownLeft);
 		else
-			Connection.Send("down|right");
+			Connection.Send(Commands.DownRight);
 
 		Drawable clickedDrawable = getResources().getDrawable(R.drawable.rightbuttonclick);
 		_buttonRight.setImageDrawable(clickedDrawable);

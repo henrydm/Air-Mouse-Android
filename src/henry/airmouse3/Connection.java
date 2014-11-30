@@ -24,6 +24,8 @@ package henry.airmouse3;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+import android.util.Log;
+
 public class Connection {
 
 	private static DatagramSocket _socket = null;
@@ -39,10 +41,12 @@ public class Connection {
 				byte[] bytes = str.getBytes("UTF-8");
 				DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
 				_socket.send(packet);
+				Log.i("air", str);
 
 			} catch (Exception e) {
 
 				e.printStackTrace();
+				Log.i("air", e.getMessage());
 			}
 		}
 	}
@@ -57,7 +61,7 @@ public class Connection {
 		if (_socket == null)
 			return;
 		if (_socket.isConnected()) {
-			Send("adeu");
+			Send(Commands.Bye);
 			// _socket.disconnect();
 		}
 		_socket.close();
