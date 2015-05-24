@@ -1,4 +1,4 @@
-# AirMouseAndroid
+# Air Mouse Android App (Client)
 
 Air mouse it's an ANDROID App which uses smartphone's GYROSCOPE to control computer mouse cursor, sending motion info from android device using JAVA and UDP/IP to computer using C#.
 
