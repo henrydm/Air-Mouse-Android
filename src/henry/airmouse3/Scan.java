@@ -135,15 +135,14 @@ public class Scan {
 				DataOutputStream outToServer = new DataOutputStream(testSocket.getOutputStream());  
 				BufferedReader inFromServer = new BufferedReader(new InputStreamReader(testSocket.getInputStream()));
 				
-				byte[] bytes = ("hola|"+android.os.Build.MANUFACTURER +"#"+android.os.Build.MODEL).getBytes("UTF-8");
+				byte[] bytes = Commands.GetConnectionString().getBytes("UTF-8");
 				outToServer.write(bytes) ;
 				
 				
 				String inStr = inFromServer.readLine();
 	
-				if (inStr.equals("que ase"))
+				if (inStr.equals(Commands.HelloResponse))
 				{
-					
 					ret = new DatagramSocket();
 					ret.connect(new InetSocketAddress(address, Settings.getPORT()));
 				}

@@ -23,7 +23,7 @@ public class TouchPadActivity extends Activity {
 	TextView _tvCoord2;
 
 	private static final int ClickTime = 300;
-	private static final int ClickDragTime = 900;
+	private static final int ClickDragTime = 400;
 	int _downx0;
 	int _downy0;
 
@@ -45,6 +45,8 @@ public class TouchPadActivity extends Activity {
 	boolean _motion0;
 	boolean _motion1;
 	boolean _isClickAndDragging;
+	boolean _isPinching;
+	boolean _isWheeling;
 
 	Date _dateLastPrimaryClick;
 	Date _dateDown0;
@@ -80,6 +82,7 @@ public class TouchPadActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		Connection.Disconnect();
+		super.onDestroy();
 	};
 
 	private int DistanceSqrt(int x1, int y1, int x2, int y2) {
@@ -102,7 +105,8 @@ public class TouchPadActivity extends Activity {
 
 			switch (action) {
 			case android.view.MotionEvent.ACTION_MOVE:
-				// Set values
+
+				// Get screen coordinates
 				_x0 = (int) MotionEventCompat.getX(event, 0);
 				_y0 = (int) MotionEventCompat.getY(event, 0);
 				if (event.getPointerCount() > 1) {
@@ -110,45 +114,74 @@ public class TouchPadActivity extends Activity {
 					_y1 = (int) MotionEventCompat.getY(event, 1);
 				}
 
-				// Process Click & Drag
-				Date currentDate = new Date();
-				if (currentDate.getTime() - _dateLastPrimaryClick.getTime() < ClickDragTime) {
-					Connection.Send(Commands.DownLeft);
-					_isClickAndDragging = true;
-				}
-				// Process for left click
-				if (!_motion0) {
-					int dist = DistanceSqrt(_x0, _y0, _downx0, _downy0);
 
-					if (dist > _pixelToleranceSqr) {
-						_motion0 = true;
+				// Process one finger
+				if (event.getPointerCount() == 1) {
+					
+					
+					// Process Click & Drag
+					Date currentDate = new Date();
+					if (currentDate.getTime() - _dateLastPrimaryClick.getTime() < ClickDragTime) {
+						Connection.Send(Commands.DownLeft);
+						_isClickAndDragging = true;
 					}
+					// Process for left click
+					if (!_motion0) {
+						int dist = DistanceSqrt(_x0, _y0, _downx0, _downy0);
 
-				}
-				// Process one finger motion
-				else {
+						if (dist > _pixelToleranceSqr) {
+							_motion0 = true;
+						}
+					}
+					
 					boolean swap = Settings.getTOUCHPAD_SWAP_AXIS();
 					float diffx = swap ? _y0 - _lasty0 : _x0 - _lastx0;
 					float diffy = swap ? _x0 - _lastx0 : _y0 - _lasty0;
-					Log.i("air", "xDelta =" + diffx);
-					Log.i("air", "yDelta =" + diffy);
+				
 					diffx *= Settings.getTOUCHPAD_MOTION_FACTOR();
 					diffy *= Settings.getTOUCHPAD_MOTION_FACTOR();
-					Connection.Send(Commands.GetDelta(diffx, diffy));
+					Connection.Send(Commands.GetMouseDeltaString(diffx, diffy));
+					
+					
+					
+				
 				}
-
-				// Process for right click
-				if (!_motion1) {
-					int dist = DistanceSqrt(_x0, _y0, _downx0, _downy0);
-
-					if (dist > _pixelToleranceSqr) {
-						_motion0 = true;
+				// Mouse wheel & pinch
+				else {
+					// Pinch
+					int distanceOriginalPinch = Distance(_downx0, _downy0, _downx1, _downy1);
+					int distanceCurrentPinch = Distance(_x0, _y0, _x1, _y1);
+					int deltaPinch = distanceCurrentPinch - distanceOriginalPinch;
+					if (!_isWheeling && Math.abs(deltaPinch) > Settings.getMIN_WHEEL_PIXELS()) {
+						_isPinching = true;
+						Connection.Send(Commands.GetZoomDeltaString(deltaPinch));
+						_downx0 = _x0;
+						_downx1 = _x1;
+						_downy0 = _y0;
+						_downy1 = _y1;
 					}
 
-				}
-				// Mouse wheel
-				else {
+					// Scroll
+					int yOriginalAverage = (_downy0 + _downy1) / 2;
+					int yCurrentAverage = (_y0 + _y1) / 2;
+					int deltaY = yCurrentAverage - yOriginalAverage;
+					if (!_isPinching && Math.abs(deltaY) > Settings.getMIN_WHEEL_PIXELS()) {
+						_isWheeling = true;
+						Connection.Send(Commands.GetWheelDeltaString(deltaY));
+						_downx0 = _x0;
+						_downx1 = _x1;
+						_downy0 = _y0;
+						_downy1 = _y1;
+					}
 
+					// Process for right click
+					if (!_motion1) {
+						int dist = DistanceSqrt(_x1, _y1, _downx1, _downy1);
+
+						if (dist > _pixelToleranceSqr) {
+							_motion1 = true;
+						}
+					}
 				}
 
 				// After process
@@ -159,28 +192,37 @@ public class TouchPadActivity extends Activity {
 					_lasty1 = _y1;
 				}
 				break;
+
+			// Primary button Click down
 			case android.view.MotionEvent.ACTION_DOWN:
 				_x0 = (int) MotionEventCompat.getX(event, 0);
 				_y0 = (int) MotionEventCompat.getY(event, 0);
 				_downx0 = _x0;
 				_downy0 = _y0;
+				_lastx0 = _x0;
+				_lasty0 = _y0;
 				_dateDown0 = new Date();
 				break;
+
+			// Secondary button click down <- Enable Pinch & Wheel
 			case android.view.MotionEvent.ACTION_POINTER_DOWN:
 				_x1 = (int) MotionEventCompat.getX(event, 1);
 				_y1 = (int) MotionEventCompat.getY(event, 1);
 				_downx1 = _x1;
 				_downy1 = _y1;
+				_lastx1 = _x1;
+				_lasty1 = _y1;
 				_dateDown1 = new Date();
 				break;
 
-			// Primary Click
+			// Primary Click up
 			case android.view.MotionEvent.ACTION_UP:
-				if (!_motion0) {
+				if (!_motion0 && !_isPinching && !_isWheeling) {
 					Date currentDatePrimaryUp = new Date();
 					long diff = currentDatePrimaryUp.getTime() - _dateDown0.getTime();
 
 					if (diff < ClickTime) {
+						Log.i("air","primary click");
 						Connection.Send(Commands.DownLeft);
 						Connection.Send(Commands.UpLeft);
 						_dateLastPrimaryClick = new Date();
@@ -191,15 +233,20 @@ public class TouchPadActivity extends Activity {
 				_motion0 = false;
 				_x0 = -1;
 				_y0 = -1;
+				_lastx0 = -1;
+				_lasty0 = -1;
 				if (_isClickAndDragging) {
 					_isClickAndDragging = false;
 					Connection.Send(Commands.UpLeft);
 				}
+
+				_isPinching = false;
+				_isWheeling = false;
 				break;
 
-			// Secondary Click
+			// Secondary Click up
 			case android.view.MotionEvent.ACTION_POINTER_UP:
-				if (!_motion1) {
+				if (!_motion1 && !_isPinching && !_isWheeling) {
 					Date currentDateSecondaryUp = new Date();
 					long diff = currentDateSecondaryUp.getTime() - _dateDown1.getTime();
 
@@ -213,7 +260,8 @@ public class TouchPadActivity extends Activity {
 				_motion1 = false;
 				_x1 = -1;
 				_y1 = -1;
-
+				_lastx1 = -1;
+				_lasty1 = -1;
 				break;
 			}
 

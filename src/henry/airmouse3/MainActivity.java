@@ -222,7 +222,7 @@ public class MainActivity extends Activity {
 			float finalY = y * motionFactor;
 
 			if (Math.abs(finalX) > Settings.getMIN_MOVEMENT() || Math.abs(finalY) > Settings.getMIN_MOVEMENT()) {
-				Connection.Send(Commands.GetDelta(finalX, finalY));
+				Connection.Send(Commands.GetMouseDeltaString(finalX, finalY));
 			}
 		}
 	};
@@ -237,7 +237,7 @@ public class MainActivity extends Activity {
 
 	private OnTouchListener OnTouchWheel = new OnTouchListener() {
 
-		@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+		//@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			if (_focusOn) {
@@ -260,7 +260,7 @@ public class MainActivity extends Activity {
 
 				// Click wheel
 				else {
-					Connection.Send("wheel|up");
+					Connection.Send(Commands.WheelUp);
 					Drawable clickedDrawable = getResources().getDrawable(R.drawable.midbutton);
 					_buttonWheel.setImageDrawable(clickedDrawable);
 				}
@@ -275,7 +275,7 @@ public class MainActivity extends Activity {
 
 				else if (Math.abs(coordinates.y - _lastWheelPixel) > Settings.getMIN_WHEEL_PIXELS()) {
 					float delta = coordinates.y - _lastWheelPixel;
-					Connection.Send("wheel|" + String.valueOf(delta));
+					Connection.Send(Commands.GetWheelDeltaString(delta));
 					_lastWheelPixel = coordinates.y;
 					_wheelScsrolling = true;
 

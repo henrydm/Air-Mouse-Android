@@ -41,7 +41,6 @@ public class Connection {
 				byte[] bytes = str.getBytes("UTF-8");
 				DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
 				_socket.send(packet);
-				Log.i("air", str);
 
 			} catch (Exception e) {
 
